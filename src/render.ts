@@ -138,6 +138,6 @@ export function renderPromo(args: RenderPromoArgs) {
   pdf.cursorTo(0, pdf.height - 50);
   pdf.write({
     text: `Invoice created via Invoice Generator by Artem Prokop`,
-    url: 'https://github.com/ExposedCat',
+    url: 'https://github.com/ExposedCat/invoice-generator',
   });
 }
