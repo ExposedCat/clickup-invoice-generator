@@ -6,4 +6,5 @@ node_modules
 
 # Sensitive data
 .env
+.iid
 invoice.pdf

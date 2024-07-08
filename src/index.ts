@@ -1,10 +1,13 @@
 import { configDotenv } from 'dotenv';
 
 import { renderHeaders, renderPromo, renderTasks, renderTotal } from './render.js';
-import { PDF } from './pdf.js';
+import { PDF, SPACING } from './pdf.js';
+import { readOrCreateNextID } from './file.js';
 import { fetchTasks } from './api.js';
 
 configDotenv();
+
+const nextId = await readOrCreateNextID();
 
 const pdf = await new PDF().init();
 
@@ -27,6 +30,15 @@ for (const env of requiredEnvs) {
     throw new Error(`Missing required environment variable: ${env}`);
   }
 }
+
+pdf.write({
+  text: `Invoice #${nextId}`,
+  direction: 'vertical',
+});
+
+pdf.newLine(5);
+
+pdf.cursorTo(SPACING.padding, pdf.cursor.y, true);
 
 renderHeaders({
   pdf,

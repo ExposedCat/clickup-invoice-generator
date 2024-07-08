@@ -3,6 +3,7 @@ import type { PDF } from './pdf.js';
 import type { Task } from './api.js';
 
 export type Header = {
+  kind: 'from' | 'to';
   name: string;
   address: string;
   country: string;
@@ -13,14 +14,15 @@ export type Header = {
 
 export type RenderHeadersArgs = {
   pdf: PDF;
-  from: Header;
-  to: Header;
+  from: Omit<Header, 'kind'>;
+  to: Omit<Header, 'kind'>;
 };
 
 function renderHeader(pdf: PDF, header: Header) {
   pdf.bulkWrite('vertical', [
-    { type: 'header', text: header.name },
-    { type: 'subHeader', text: header.address },
+    { type: 'header', text: `INVOICE ${header.kind.toUpperCase()}` },
+    { type: 'subHeader', text: header.name },
+    { text: header.address },
     { text: header.country },
     { text: header.postalCode },
     { text: header.ICO ? `ICO: ${header.ICO}` : null },
@@ -31,15 +33,17 @@ function renderHeader(pdf: PDF, header: Header) {
 export function renderHeaders(args: RenderHeadersArgs) {
   const { pdf, from, to } = args;
 
-  renderHeader(pdf, from);
+  const initialCursor = pdf.cursor;
+
+  renderHeader(pdf, { ...from, kind: 'from' });
 
   const firstColumnCursor = pdf.cursor;
-  pdf.cursorTo(pdf.width / 2, 0);
+  pdf.cursorTo(pdf.width / 2, initialCursor.y, true);
 
-  renderHeader(pdf, to);
+  renderHeader(pdf, { ...to, kind: 'to' });
 
   pdf.cursor = firstColumnCursor;
-  pdf.newLine(3);
+  pdf.newLine(5);
 }
 
 export type RenderTasksArgs = {
