@@ -30,6 +30,28 @@ function renderHeader(pdf: PDF, header: Header) {
   ]);
 }
 
+export type Credentials = {
+  bankName: string;
+  iban: string;
+  bic: string;
+  variable: string;
+};
+
+export type RenderCredentialsArgs = {
+  pdf: PDF;
+  credentials: Credentials;
+};
+
+export function renderCredentials(args: RenderCredentialsArgs) {
+  const { pdf, credentials } = args;
+  pdf.bulkWrite('vertical', [
+    { text: `Bank name:         ${credentials.bankName}` },
+    { text: `IBAN:              ${credentials.iban}` },
+    { text: `BIC:               ${credentials.bic}` },
+    { text: `Variable symbol:   ${credentials.variable}` },
+  ]);
+}
+
 export function renderHeaders(args: RenderHeadersArgs) {
   const { pdf, from, to } = args;
 
@@ -115,7 +137,7 @@ export function renderPromo(args: RenderPromoArgs) {
 
   pdf.cursorTo(0, pdf.height - 50);
   pdf.write({
-    text: `Powered by Artem Prokop`,
+    text: `Invoice created via Invoice Generator by Artem Prokop`,
     url: 'https://github.com/ExposedCat',
   });
 }

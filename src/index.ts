@@ -1,13 +1,13 @@
 import { configDotenv } from 'dotenv';
 
-import { renderHeaders, renderPromo, renderTasks, renderTotal } from './render.js';
+import { renderCredentials, renderHeaders, renderPromo, renderTasks, renderTotal } from './render.js';
 import { PDF, SPACING } from './pdf.js';
 import { readOrCreateNextID } from './file.js';
 import { fetchTasks } from './api.js';
 
 configDotenv();
 
-const nextId = await readOrCreateNextID();
+const invoiceId = await readOrCreateNextID();
 
 const pdf = await new PDF().init();
 
@@ -23,6 +23,9 @@ const requiredEnvs = [
   'TO_ADDRESS',
   'TO_COUNTRY',
   'TO_POSTAL_CODE',
+  'BANK_NAME',
+  'IBAN',
+  'BIC',
 ];
 
 for (const env of requiredEnvs) {
@@ -32,7 +35,7 @@ for (const env of requiredEnvs) {
 }
 
 pdf.write({
-  text: `Invoice #${nextId}`,
+  text: `Invoice #${invoiceId}`,
   direction: 'vertical',
 });
 
@@ -59,6 +62,18 @@ renderHeaders({
     DIC: process.env.TO_DIC,
   },
 });
+
+renderCredentials({
+  pdf,
+  credentials: {
+    bankName: process.env.BANK_NAME!,
+    iban: process.env.IBAN!,
+    bic: process.env.BIC!,
+    variable: String(invoiceId),
+  },
+});
+
+pdf.newLine(5);
 
 const tasks = await fetchTasks();
 const total = renderTasks({ pdf, tasks });
