@@ -12,3 +12,8 @@ export function getLastMonth() {
   const endOfMonth = new Date(now.getFullYear(), now.getMonth(), 0).setHours(23, 59, 59, 999);
   return [startOfMonth, endOfMonth];
 }
+
+export function getThisMonth() {
+  const [_, startOfMonth] = getLastMonth();
+  return [startOfMonth, Date.now()];
+}

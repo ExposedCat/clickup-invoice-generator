@@ -1,4 +1,4 @@
-import { getLastMonth } from './utils.js';
+import { getLastMonth, getThisMonth } from './utils.js';
 
 const BASE_ENDPOINT = 'https://api.clickup.com/api/v2';
 
@@ -15,12 +15,12 @@ export type Task = {
   time: number;
 };
 
-export async function fetchTasks() {
+export async function fetchTasks(period: 'last' | 'this' = 'last') {
   if (!process.env.CLICKUP_PRIVATE_KEY || !process.env.CLICKUP_TEAM_ID || !process.env.CLICKUP_USER_ID) {
     throw new Error('Cannot parse tasks: CLICKUP_PRIVATE_KEY, CLICKUP_TEAM_ID or CLICKUP_USER_ID is unset');
   }
 
-  const [startOfMonth, endOfMonth] = getLastMonth();
+  const [startOfMonth, endOfMonth] = (period === 'last' ? getLastMonth : getThisMonth)();
   const params = `assignee=${process.env.CLICKUP_USER_ID}&start_date=${startOfMonth}&end_date=${endOfMonth}`;
   const timeEndpoint = `/team/${process.env.CLICKUP_TEAM_ID}/time_entries?${params}`;
 

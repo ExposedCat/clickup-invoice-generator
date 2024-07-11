@@ -75,7 +75,9 @@ renderCredentials({
 
 pdf.newLine(5);
 
-const tasks = await fetchTasks();
+const tasks = await fetchTasks(
+  process.env.PERIOD === 'last' || process.env.PERIOD === 'this' ? process.env.PERIOD : 'last',
+);
 const total = renderTasks({ pdf, tasks });
 renderTotal({ pdf, total });
 
