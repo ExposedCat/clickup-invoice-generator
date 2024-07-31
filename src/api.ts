@@ -11,6 +11,7 @@ type TasksAPIResponse = {
 };
 
 export type Task = {
+  id: string;
   name: string;
   time: number;
 };
@@ -36,9 +37,11 @@ export async function fetchTasks(period: 'last' | 'this' = 'last') {
       start,
       end,
     } = task;
-    tasks[id] ??= { name, time: 0 };
+    tasks[id] ??= { name, time: 0, id };
     tasks[id].time += end - start;
   }
 
-  return tasks;
+  const taskList = Object.values(tasks).sort((a, b) => b.time - a.time);
+
+  return taskList;
 }

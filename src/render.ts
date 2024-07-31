@@ -70,24 +70,24 @@ export function renderHeaders(args: RenderHeadersArgs) {
 
 export type RenderTasksArgs = {
   pdf: PDF;
-  tasks: Record<string, Task>;
+  tasks: Task[];
 };
 
 export function renderTasks(args: RenderTasksArgs): number {
   const { pdf, tasks } = args;
 
   const tasksCursor = pdf.cursor;
-  for (const [id, task] of Object.entries(tasks)) {
+  for (const task of tasks) {
     pdf.write({
-      text: `[${id}] ${shortenString(task.name, 40)}`,
+      text: `[${task.id}] ${shortenString(task.name, 40)}`,
       direction: 'vertical',
-      url: `https://app.clickup.com/t/${id}`,
+      url: `https://app.clickup.com/t/${task.id}`,
     });
   }
 
   pdf.cursorTo(pdf.width - 180, tasksCursor.y, true);
 
-  for (const task of Object.values(tasks)) {
+  for (const task of tasks) {
     const time = Number((task.time / 1000 / 60 / 60).toFixed(2));
 
     pdf.write({
@@ -99,7 +99,7 @@ export function renderTasks(args: RenderTasksArgs): number {
   pdf.cursorTo(pdf.width - 100, tasksCursor.y, true);
 
   let total = 0;
-  for (const task of Object.values(tasks)) {
+  for (const task of tasks) {
     const time = Number((task.time / 1000 / 60 / 60).toFixed(2));
     total += time * 500;
 
