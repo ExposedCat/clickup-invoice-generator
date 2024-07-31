@@ -1,7 +1,7 @@
 import { configDotenv } from 'dotenv';
 
-import { renderCredentials, renderHeaders, renderPromo, renderTasks, renderTotal } from './render.js';
-import { PDF, SPACING } from './pdf.js';
+import { renderCredentials, renderHeaders, renderPromo, renderTasks, renderTopBar, renderTotal } from './render.js';
+import { PDF } from './pdf.js';
 import { readOrCreateNextID } from './file.js';
 import { fetchTasks } from './api.js';
 
@@ -26,6 +26,8 @@ const requiredEnvs = [
   'BANK_NAME',
   'IBAN',
   'BIC',
+  'CURRENCY',
+  'PER_HOUR',
 ];
 
 for (const env of requiredEnvs) {
@@ -34,14 +36,7 @@ for (const env of requiredEnvs) {
   }
 }
 
-pdf.write({
-  text: `Invoice #${invoiceId}`,
-  direction: 'vertical',
-});
-
-pdf.newLine(5);
-
-pdf.cursorTo(SPACING.padding, pdf.cursor.y, true);
+renderTopBar({ pdf, invoiceId });
 
 renderHeaders({
   pdf,
@@ -73,13 +68,19 @@ renderCredentials({
   },
 });
 
-pdf.newLine(5);
-
 const tasks = await fetchTasks(
   process.env.PERIOD === 'last' || process.env.PERIOD === 'this' ? process.env.PERIOD : 'last',
 );
-const total = renderTasks({ pdf, tasks });
-renderTotal({ pdf, total });
+const total = renderTasks({
+  pdf,
+  tasks,
+  salary: {
+    currency: process.env.CURRENCY!,
+    perHour: Number(process.env.PER_HOUR),
+  },
+});
+
+renderTotal({ pdf, total, currency: process.env.CURRENCY! });
 
 renderPromo({ pdf });
 

@@ -1,5 +1,5 @@
 import { shortenString } from './utils.js';
-import type { PDF } from './pdf.js';
+import { SPACING, type PDF } from './pdf.js';
 import type { Task } from './api.js';
 
 export type Header = {
@@ -50,6 +50,26 @@ export function renderCredentials(args: RenderCredentialsArgs) {
     { text: `BIC:               ${credentials.bic}` },
     { text: `Variable symbol:   ${credentials.variable}` },
   ]);
+
+  pdf.newLine(5);
+}
+
+export type RenderTopBarArgs = {
+  pdf: PDF;
+  invoiceId: number;
+};
+
+export function renderTopBar(args: RenderTopBarArgs) {
+  const { pdf, invoiceId } = args;
+
+  pdf.write({
+    text: `Invoice #${invoiceId}`,
+    direction: 'vertical',
+  });
+
+  pdf.newLine(5);
+
+  pdf.cursorTo(SPACING.padding, pdf.cursor.y, true);
 }
 
 export function renderHeaders(args: RenderHeadersArgs) {
@@ -70,11 +90,15 @@ export function renderHeaders(args: RenderHeadersArgs) {
 
 export type RenderTasksArgs = {
   pdf: PDF;
+  salary: {
+    currency: string;
+    perHour: number;
+  };
   tasks: Task[];
 };
 
 export function renderTasks(args: RenderTasksArgs): number {
-  const { pdf, tasks } = args;
+  const { pdf, tasks, salary } = args;
 
   const tasksCursor = pdf.cursor;
   for (const task of tasks) {
@@ -101,10 +125,10 @@ export function renderTasks(args: RenderTasksArgs): number {
   let total = 0;
   for (const task of tasks) {
     const time = Number((task.time / 1000 / 60 / 60).toFixed(2));
-    total += time * 500;
+    total += time * salary.perHour;
 
     pdf.write({
-      text: `${time * 500} CZK`,
+      text: `${time * salary.perHour} ${salary.currency}`,
       direction: 'vertical',
     });
   }
@@ -117,15 +141,16 @@ export function renderTasks(args: RenderTasksArgs): number {
 
 export type RenderTotalArgs = {
   pdf: PDF;
+  currency: string;
   total: number;
 };
 
 export function renderTotal(args: RenderTotalArgs) {
-  const { pdf, total } = args;
+  const { pdf, total, currency } = args;
 
   pdf.write({
     type: 'subHeader',
-    text: `Total: ${total} CZK`,
+    text: `Total: ${total} ${currency}`,
     direction: 'vertical',
   });
 }
