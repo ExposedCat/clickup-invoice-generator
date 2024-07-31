@@ -143,16 +143,21 @@ export type RenderTotalArgs = {
   pdf: PDF;
   currency: string;
   total: number;
+  promo?: boolean;
 };
 
 export function renderTotal(args: RenderTotalArgs) {
-  const { pdf, total, currency } = args;
+  const { pdf, total, currency, promo = true } = args;
 
   pdf.write({
     type: 'subHeader',
     text: `Total: ${total} ${currency}`,
     direction: 'vertical',
   });
+
+  if (promo) {
+    renderPromo({ pdf });
+  }
 }
 
 export type RenderPromoArgs = { pdf: PDF };
