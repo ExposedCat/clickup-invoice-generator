@@ -68,9 +68,14 @@ renderCredentials({
   },
 });
 
-const tasks = await fetchTasks(
-  process.env.PERIOD === 'last' || process.env.PERIOD === 'this' ? process.env.PERIOD : 'last',
-);
+const tasks = await fetchTasks({
+  clickUp: {
+    privateKey: process.env.CLICKUP_PRIVATE_KEY!,
+    teamId: process.env.CLICKUP_TEAM_ID!,
+    userId: process.env.CLICKUP_USER_ID!,
+  },
+  period: process.env.PERIOD === 'last' || process.env.PERIOD === 'this' ? process.env.PERIOD : 'last',
+});
 const total = renderTasks({
   pdf,
   tasks,

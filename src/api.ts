@@ -16,17 +16,27 @@ export type Task = {
   time: number;
 };
 
-export async function fetchTasks(period: 'last' | 'this' = 'last') {
-  if (!process.env.CLICKUP_PRIVATE_KEY || !process.env.CLICKUP_TEAM_ID || !process.env.CLICKUP_USER_ID) {
-    throw new Error('Cannot parse tasks: CLICKUP_PRIVATE_KEY, CLICKUP_TEAM_ID or CLICKUP_USER_ID is unset');
-  }
+export type FetchTasksArgs = {
+  clickUp: {
+    privateKey: string;
+    teamId: string;
+    userId: string;
+  };
+  period?: 'last' | 'this';
+};
+
+export async function fetchTasks(args: FetchTasksArgs) {
+  const {
+    clickUp: { privateKey, teamId, userId },
+    period = 'this',
+  } = args;
 
   const [startOfMonth, endOfMonth] = (period === 'last' ? getLastMonth : getThisMonth)();
-  const params = `assignee=${process.env.CLICKUP_USER_ID}&start_date=${startOfMonth}&end_date=${endOfMonth}`;
-  const timeEndpoint = `/team/${process.env.CLICKUP_TEAM_ID}/time_entries?${params}`;
+  const params = `assignee=${userId}&start_date=${startOfMonth}&end_date=${endOfMonth}`;
+  const timeEndpoint = `/team/${teamId}/time_entries?${params}`;
 
   const result = await fetch(`${BASE_ENDPOINT}${timeEndpoint}`, {
-    headers: { Authorization: process.env.CLICKUP_PRIVATE_KEY },
+    headers: { Authorization: privateKey },
   });
   const response: TasksAPIResponse = await result.json();
 

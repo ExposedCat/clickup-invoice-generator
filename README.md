@@ -67,9 +67,14 @@ renderCredentials({
 ```typescript
 import { fetchTasks } from 'clickup-invoice-generator';
 
-const tasks = await fetchTasks(
-  'this', // 'last' for last month
-);
+const tasks = await fetchTasks({
+  clickUp: {
+    privateKey: 'xxx',
+    teamId: 'xxx',
+    userId: 'xxx',
+  },
+  period: 'this', // 'last' for previous month
+});
 ```
 
 #### Render tasks and total
@@ -81,8 +86,8 @@ const total = renderTasks({
   pdf,
   tasks,
   salary: {
-    currency: process.env.CURRENCY!,
-    perHour: Number(process.env.PER_HOUR),
+    currency: '$',
+    perHour: 40,
   },
 });
 
@@ -90,7 +95,7 @@ renderTotal({
   promo: true, // Please use `renderPromo({ pdf })` elsewhere if you set `false` here
   pdf,
   total,
-  currency: process.env.CURRENCY!,
+  currency: '$',
 });
 ```
 
