@@ -33,7 +33,7 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "start": "npm run build && node ./dist/example.ts",
+    "start": "npm run build && node ./dist/example.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },
