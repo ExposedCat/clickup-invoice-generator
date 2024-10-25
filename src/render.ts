@@ -97,11 +97,22 @@ export type RenderTasksArgs = {
   tasks: Task[];
 };
 
-export function renderTasks(args: RenderTasksArgs): number {
+export type Total = {
+  salary: string | number;
+  totalHours: string | number;
+};
+
+function convertToHours(time: number, toFixed: null | number): number {
+  return toFixed ? Number((time / 1000 / 60 / 60).toFixed(toFixed)) : time / 1000 / 60 / 60;
+}
+
+export function renderTasks(args: RenderTasksArgs): Total {
   const { pdf, tasks, salary } = args;
+  const fullDescripted = tasks.slice(0, 18);
+  const rest = tasks.slice(18);
 
   const tasksCursor = pdf.cursor;
-  for (const task of tasks) {
+  for (const task of fullDescripted) {
     pdf.write({
       text: `[${task.id}] ${shortenString(task.name, 40)}`,
       direction: 'vertical',
@@ -109,10 +120,17 @@ export function renderTasks(args: RenderTasksArgs): number {
     });
   }
 
+  if (rest.length > 0) {
+    pdf.write({
+      text: `And ${rest.length} more for total`,
+      direction: 'vertical',
+    });
+  }
+
   pdf.cursorTo(pdf.width - 180, tasksCursor.y, true);
 
-  for (const task of tasks) {
-    const time = Number((task.time / 1000 / 60 / 60).toFixed(2));
+  for (const task of fullDescripted) {
+    const time = convertToHours(task.time, 2);
 
     pdf.write({
       text: `${time}h`,
@@ -120,12 +138,20 @@ export function renderTasks(args: RenderTasksArgs): number {
     });
   }
 
+  const restTotalHours =
+    rest.length > 0 ? rest.reduce((sum, task) => sum + convertToHours(task.time, null), 0).toFixed(2) : 0;
+  if (rest.length > 0) {
+    pdf.write({
+      text: `${restTotalHours}h`,
+      direction: 'vertical',
+    });
+  }
+  const restTotal = Number(restTotalHours) * salary.perHour;
+
   pdf.cursorTo(pdf.width - 100, tasksCursor.y, true);
 
-  let total = 0;
-  for (const task of tasks) {
-    const time = Number((task.time / 1000 / 60 / 60).toFixed(2));
-    total += time * salary.perHour;
+  for (const task of fullDescripted) {
+    const time = convertToHours(task.time, 2);
 
     pdf.write({
       text: `${time * salary.perHour} ${salary.currency}`,
@@ -133,16 +159,24 @@ export function renderTasks(args: RenderTasksArgs): number {
     });
   }
 
-  pdf.cursorTo(pdf.width - 180, pdf.cursor.y, true);
-  pdf.newLine(3);
+  if (rest.length > 0) {
+    pdf.write({
+      text: `${restTotal} ${salary.currency}`,
+      direction: 'vertical',
+    });
+  }
 
-  return total;
+  pdf.cursorTo(pdf.width - 290, pdf.cursor.y, true);
+  pdf.newLine(3);
+  const totalTime = Number(tasks.reduce((sum, task) => sum + convertToHours(task.time, null), 0).toFixed(2));
+  const total = totalTime * salary.perHour;
+  return { salary: total.toFixed(0), totalHours: totalTime };
 }
 
 export type RenderTotalArgs = {
   pdf: PDF;
   currency: string;
-  total: number;
+  total: Total;
   promo?: boolean;
 };
 
@@ -151,7 +185,7 @@ export function renderTotal(args: RenderTotalArgs) {
 
   pdf.write({
     type: 'subHeader',
-    text: `Total: ${total} ${currency}`,
+    text: `Total: ${total.salary} ${currency} for ${total.totalHours}h`,
     direction: 'vertical',
   });
 
