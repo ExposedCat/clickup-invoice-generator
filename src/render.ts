@@ -122,7 +122,7 @@ export function renderTasks(args: RenderTasksArgs): Total {
 
   if (rest.length > 0) {
     pdf.write({
-      text: `And ${rest.length} more for total`,
+      text: `... ${rest.length} more ...`,
       direction: 'vertical',
     });
   }
@@ -185,7 +185,7 @@ export function renderTotal(args: RenderTotalArgs) {
 
   pdf.write({
     type: 'subHeader',
-    text: `Total: ${total.salary} ${currency} for ${total.totalHours}h`,
+    text: `Total: ${total.salary} ${currency} (${total.totalHours}h)`,
     direction: 'vertical',
   });
 
